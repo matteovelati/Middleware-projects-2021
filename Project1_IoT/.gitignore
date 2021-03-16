@@ -1,0 +1,9 @@
+# Log file
+*.log
+*.DS_Store
+
+# Compiled files
+*.cooja
+
+# Objects
+obj_cooja/

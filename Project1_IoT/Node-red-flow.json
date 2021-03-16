@@ -1,0 +1,954 @@
+[
+    {
+        "id": "f670c89e.47aa38",
+        "type": "tab",
+        "label": "CONTIKI-project",
+        "disabled": false,
+        "info": "Backend processing for CONTIKI-NG project\n\nPOLIMI course: MWT 2021"
+    },
+    {
+        "id": "2bc7e33f.e46dcc",
+        "type": "mqtt in",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "topic": "mdw2021/contacts/#",
+        "qos": "1",
+        "datatype": "auto",
+        "broker": "47342bb2.99202c",
+        "x": 140,
+        "y": 80,
+        "wires": [
+            [
+                "ab6163aa.d0556"
+            ]
+        ],
+        "info": "Subscriber to CONTIKI-NG sensors"
+    },
+    {
+        "id": "ab6163aa.d0556",
+        "type": "json",
+        "z": "f670c89e.47aa38",
+        "name": "convertToJs",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 350,
+        "y": 80,
+        "wires": [
+            [
+                "4a7c6375.a6313c"
+            ]
+        ]
+    },
+    {
+        "id": "1ada1076.4911a",
+        "type": "firebase modify",
+        "z": "f670c89e.47aa38",
+        "name": "pushInverseContactToDB",
+        "firebaseconfig": "",
+        "childpath": "msg.childpath",
+        "method": "push",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 750,
+        "y": 300,
+        "wires": [
+            [
+                "2abe07e7.a36cd8"
+            ]
+        ]
+    },
+    {
+        "id": "5f838735.aeef48",
+        "type": "comment",
+        "z": "f670c89e.47aa38",
+        "name": "CONTACT RECEIVED",
+        "info": "(S1, S2)\nNode S1 has been in contact with node S2\nFirst check if the tuple still exists on the online DB: if it is, just skip it, otherwise add it.",
+        "x": 140,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "66558d7.389ae74",
+        "type": "comment",
+        "z": "f670c89e.47aa38",
+        "name": "SIGNAL RECEIVED",
+        "info": "(S1, SIGNAL)\nSignal received: \nPull from the the online DB the list of contacts of that node S1, then notify each node of the list and finally delete this list of tuples from the online DB.",
+        "x": 130,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "4154b43.a5c5e4c",
+        "type": "firebase.once",
+        "z": "f670c89e.47aa38",
+        "name": "pullContactsFromDB",
+        "firebaseconfig": "",
+        "childpath": "msg.childpath",
+        "repeatifnull": false,
+        "eventType": "value",
+        "queries": [],
+        "x": 980,
+        "y": 80,
+        "wires": [
+            [
+                "4f42a9d1.96f868"
+            ]
+        ]
+    },
+    {
+        "id": "4f42a9d1.96f868",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "checkIfAlreadyExists",
+        "func": "var me          = flow.get('me_c')        || {};\nvar contact     = flow.get('contact_c')   || {};\n\nif (msg.payload === null){\n    msg.childpath   = me;\n    msg.payload     = contact;\n}\nelse {\n    if (Object.values(msg.payload).includes(contact)){\n        // if already exists skip it\n        msg.payload     = null;\n        msg.childpath   = null;\n    }\n    else {\n        // otherwise add it\n        msg.childpath    = me;\n        msg.payload      = contact;\n    }\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 220,
+        "y": 180,
+        "wires": [
+            [
+                "d1c5dda4.58139"
+            ]
+        ]
+    },
+    {
+        "id": "50ffc632.4dc6f8",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "setVariables",
+        "func": "msg.childpath   = msg.payload.me.trim();\nmsg.payload     = msg.payload.contact.trim();\n\n// creating flow shared variables\nflow.set('me_c',      msg.childpath);\nflow.set('contact_c', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 770,
+        "y": 80,
+        "wires": [
+            [
+                "4154b43.a5c5e4c"
+            ]
+        ]
+    },
+    {
+        "id": "7fef7bc2.1aab74",
+        "type": "mqtt out",
+        "z": "f670c89e.47aa38",
+        "name": "testPublisher",
+        "topic": "",
+        "qos": "1",
+        "retain": "",
+        "broker": "47342bb2.99202c",
+        "x": 1050,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "f7e04c2b.0ed98",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "202 -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/202:2:2:2",
+        "payload": "{\"me\":\"202:2:2:2\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1080,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "d02ddd5e.9f6b6",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "203 -> 204",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/contacts/203:3:3:3",
+        "payload": "{\"me\":\"203:3:3:3\", \"contact\":\"204:4:4:4\"}",
+        "payloadType": "json",
+        "x": 1080,
+        "y": 1100,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "db36f4a4.cfe2b8",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "addInverseContact",
+        "func": "if (msg.payload === null){\n    return msg;\n}\nelse {\n    temp            = msg.childpath;\n    msg.childpath   = msg.payload;\n    msg.payload     = temp;\n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 470,
+        "y": 300,
+        "wires": [
+            [
+                "1ada1076.4911a"
+            ]
+        ]
+    },
+    {
+        "id": "56f2085d.de5258",
+        "type": "delay",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "200",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 470,
+        "y": 240,
+        "wires": [
+            [
+                "db36f4a4.cfe2b8"
+            ]
+        ]
+    },
+    {
+        "id": "d1c5dda4.58139",
+        "type": "switch",
+        "z": "f670c89e.47aa38",
+        "name": "isNull?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "null",
+                "vt": "jsonata"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 430,
+        "y": 180,
+        "wires": [
+            [
+                "2abe07e7.a36cd8"
+            ],
+            [
+                "56f2085d.de5258",
+                "cd3ab127.a4b77"
+            ]
+        ]
+    },
+    {
+        "id": "b00b0bfa.f6e5e8",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "203 -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/203:3:3:3",
+        "payload": "{\"me\":\"203:3:3:3\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1120,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "f54be71f.0a79a8",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "205 -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/205:5:5:5",
+        "payload": "{\"me\":\"205:5:5:5\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1200,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "f0767b9e.14e988",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "206 -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/206:6:6:6",
+        "payload": "{\"me\":\"206:6:6:6\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1240,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "8d404b11.6e6a18",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "201 -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/201:1:1:1",
+        "payload": "{\"me\":\"201:1:1:1\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1040,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "990b6fc8.e1b88",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "207 -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/207:7:7:7",
+        "payload": "{\"me\":\"207:7:7:7\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1280,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "39d15240.d20bfe",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "208 -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/208:8:8:8",
+        "payload": "{\"me\":\"208:8:8:8\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1320,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "d76d1c8f.c0f21",
+        "type": "mqtt in",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "topic": "mdw2021/signals/#",
+        "qos": "1",
+        "datatype": "auto",
+        "broker": "47342bb2.99202c",
+        "x": 130,
+        "y": 500,
+        "wires": [
+            [
+                "2a1ab26d.47e36e"
+            ]
+        ],
+        "info": "Subscriber to CONTIKI-NG sensors"
+    },
+    {
+        "id": "2a1ab26d.47e36e",
+        "type": "json",
+        "z": "f670c89e.47aa38",
+        "name": "convertToJs",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 350,
+        "y": 500,
+        "wires": [
+            [
+                "a3ab59b7.2b9608"
+            ]
+        ]
+    },
+    {
+        "id": "848f8772.ea2448",
+        "type": "firebase.once",
+        "z": "f670c89e.47aa38",
+        "name": "pullNodesFromDB",
+        "firebaseconfig": "",
+        "childpath": "msg.childpath",
+        "repeatifnull": false,
+        "eventType": "value",
+        "queries": [],
+        "x": 970,
+        "y": 500,
+        "wires": [
+            [
+                "d6c3f71c.4b35b8"
+            ]
+        ]
+    },
+    {
+        "id": "a8815a51.784528",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "setVariables",
+        "func": "msg.childpath   = msg.payload.me.trim();\nmsg.payload     = msg.payload.contact.trim();\n\n// creating flow shared variables\nflow.set('me_s',      msg.childpath);\nflow.set('contact_s', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 770,
+        "y": 500,
+        "wires": [
+            [
+                "848f8772.ea2448"
+            ]
+        ]
+    },
+    {
+        "id": "9ec6627b.973e3",
+        "type": "firebase modify",
+        "z": "f670c89e.47aa38",
+        "name": "removeContactsFromDB",
+        "firebaseconfig": "",
+        "childpath": "msg.childpath",
+        "method": "remove",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 950,
+        "y": 660,
+        "wires": [
+            [
+                "4624a2e5.c0f02c"
+            ]
+        ]
+    },
+    {
+        "id": "c61545e0.deb848",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "selectNotifiedNodes",
+        "func": "msg.childpath   = flow.get('me_s')      || {};\nmsg.payload     = flow.get('contact_s') || {};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 920,
+        "y": 600,
+        "wires": [
+            [
+                "9ec6627b.973e3"
+            ]
+        ]
+    },
+    {
+        "id": "d6c3f71c.4b35b8",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "collectToArray",
+        "func": "if (msg.payload === null){\n    return msg;\n}\nelse {\n    var nodes = [];\n    for (i=0; i < Object.keys(msg.payload).length; i++){\n        // avoid duplicates\n        if (!nodes.includes(Object.values(msg.payload)[i]))\n            nodes.push(Object.values(msg.payload)[i]);\n    }\n    msg.array = nodes;\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 200,
+        "y": 600,
+        "wires": [
+            [
+                "af67ded2.57321"
+            ]
+        ]
+    },
+    {
+        "id": "75a336cb.757598",
+        "type": "array-loop",
+        "z": "f670c89e.47aa38",
+        "name": "array-loop",
+        "key": "alcd55cfb3f8ce3",
+        "keyType": "msg",
+        "reset": false,
+        "resetValue": "value-null",
+        "array": "array",
+        "arrayType": "msg",
+        "x": 370,
+        "y": 680,
+        "wires": [
+            [
+                "c61545e0.deb848"
+            ],
+            [
+                "aa5e2347.92b54"
+            ]
+        ],
+        "info": "Cycle on array of nodes to notify them"
+    },
+    {
+        "id": "d4e118ef.2e3008",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "loopFunction",
+        "func": "// loop\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 410,
+        "y": 780,
+        "wires": [
+            [
+                "75a336cb.757598",
+                "a63b0da3.9042"
+            ]
+        ]
+    },
+    {
+        "id": "3492752c.6b84ba",
+        "type": "comment",
+        "z": "f670c89e.47aa38",
+        "name": "END..",
+        "info": "After having notified each node, delete the list from the DB",
+        "x": 730,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "e0830484.aa6258",
+        "type": "mqtt out",
+        "z": "f670c89e.47aa38",
+        "name": "notificationsPublisher",
+        "topic": "",
+        "qos": "1",
+        "retain": "",
+        "broker": "47342bb2.99202c",
+        "x": 560,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "a63b0da3.9042",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "signalsToJSON",
+        "func": "var me      = flow.get('me_s') || {};\n\nmsg.topic   = \"mdw2021/notifications/\";\nmsg.topic   = msg.topic + msg.payload;\n// JSON string format\ntmp         = '{\"me\":\"'+me+'\",\"contact\":\"'+msg.payload+'\"}';\nmsg.payload = tmp;\n\nnodeID      = msg.payload.split(\":\")[3];\nmsg.payload = \"\";\nfor (i = 0; i < parseInt(nodeID, 16); i++){\n    msg.payload += \"i\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 320,
+        "y": 860,
+        "wires": [
+            [
+                "e0830484.aa6258"
+            ]
+        ]
+    },
+    {
+        "id": "aa5e2347.92b54",
+        "type": "delay",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "4",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 250,
+        "y": 780,
+        "wires": [
+            [
+                "d4e118ef.2e3008"
+            ]
+        ]
+    },
+    {
+        "id": "a3ab59b7.2b9608",
+        "type": "trigger",
+        "z": "f670c89e.47aa38",
+        "name": "bottleneckForMsgs",
+        "op1": "",
+        "op2": "0",
+        "op1type": "pay",
+        "op2type": "str",
+        "duration": "0",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 570,
+        "y": 500,
+        "wires": [
+            [
+                "a8815a51.784528"
+            ]
+        ]
+    },
+    {
+        "id": "4624a2e5.c0f02c",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "nextMessage",
+        "func": "msg.reset = \"reset\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 900,
+        "y": 760,
+        "wires": [
+            [
+                "f332e760.9fa928"
+            ]
+        ]
+    },
+    {
+        "id": "f332e760.9fa928",
+        "type": "link out",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "links": [
+            "229ff002.e6c82"
+        ],
+        "x": 1055,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "229ff002.e6c82",
+        "type": "link in",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "links": [
+            "f332e760.9fa928"
+        ],
+        "x": 415,
+        "y": 460,
+        "wires": [
+            [
+                "a3ab59b7.2b9608"
+            ]
+        ]
+    },
+    {
+        "id": "4a7c6375.a6313c",
+        "type": "trigger",
+        "z": "f670c89e.47aa38",
+        "name": "bottleneckForMsgs",
+        "op1": "",
+        "op2": "0",
+        "op1type": "pay",
+        "op2type": "str",
+        "duration": "0",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 570,
+        "y": 80,
+        "wires": [
+            [
+                "50ffc632.4dc6f8"
+            ]
+        ]
+    },
+    {
+        "id": "842ffcfd.0cde7",
+        "type": "link in",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "links": [
+            "27a917fd.78e9c8"
+        ],
+        "x": 395,
+        "y": 40,
+        "wires": [
+            [
+                "4a7c6375.a6313c"
+            ]
+        ]
+    },
+    {
+        "id": "27a917fd.78e9c8",
+        "type": "link out",
+        "z": "f670c89e.47aa38",
+        "name": "",
+        "links": [
+            "842ffcfd.0cde7"
+        ],
+        "x": 1115,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "cd3ab127.a4b77",
+        "type": "firebase modify",
+        "z": "f670c89e.47aa38",
+        "name": "pushNewContactToDB",
+        "firebaseconfig": "",
+        "childpath": "msg.childpath",
+        "method": "push",
+        "value": "msg.payload",
+        "priority": "msg.priority",
+        "x": 740,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2abe07e7.a36cd8",
+        "type": "function",
+        "z": "f670c89e.47aa38",
+        "name": "nextMessage",
+        "func": "msg.reset = \"reset\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 980,
+        "y": 180,
+        "wires": [
+            [
+                "27a917fd.78e9c8"
+            ]
+        ]
+    },
+    {
+        "id": "5f00d19a.bdd89",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "20e -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/20e:e:e:e",
+        "payload": "{\"me\":\"20e:e:e:e\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1360,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "af67ded2.57321",
+        "type": "switch",
+        "z": "f670c89e.47aa38",
+        "name": "isNull?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "null",
+                "vt": "jsonata"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 390,
+        "y": 600,
+        "wires": [
+            [
+                "4624a2e5.c0f02c"
+            ],
+            [
+                "75a336cb.757598"
+            ]
+        ]
+    },
+    {
+        "id": "19f0c7da.214848",
+        "type": "inject",
+        "z": "f670c89e.47aa38",
+        "name": "20d -> SIGNAL",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "mdw2021/signals/20d:d:d:d",
+        "payload": "{\"me\":\"20d:d:d:d\", \"contact\":\"SIGNAL\"}",
+        "payloadType": "json",
+        "x": 780,
+        "y": 1400,
+        "wires": [
+            [
+                "7fef7bc2.1aab74"
+            ]
+        ]
+    },
+    {
+        "id": "47342bb2.99202c",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "mqtt.neslab.it",
+        "port": "3200",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": ""
+    }
+]
