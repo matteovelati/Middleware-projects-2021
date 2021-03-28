@@ -95,9 +95,7 @@ public class ShippingConsumerProducer extends Thread {
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         producerProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionalId);
-        // Idempotence = exactly once semantics between the producer and the partition
         producerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(true));
-        //producerProps.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, String.valueOf(1000));
         return new KafkaProducer<>(producerProps);
     }
 

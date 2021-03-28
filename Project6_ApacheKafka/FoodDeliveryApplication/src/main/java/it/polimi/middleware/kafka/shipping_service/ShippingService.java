@@ -18,8 +18,8 @@ import java.util.Properties;
 
 public class ShippingService {
 
-    private static final String ordersTopic     = "orders";
-    private static final String shippingGroup      = "shippingGroup";
+    private static final String ordersTopic             = "orders";
+    private static final String shippingGroup           = "shippingGroup";
     private static final String offsetResetStrategy     = "earliest";
     private static final String isolationLevelStrategy  = "read_committed";
 

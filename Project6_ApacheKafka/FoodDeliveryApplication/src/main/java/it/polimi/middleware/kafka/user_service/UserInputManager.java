@@ -8,7 +8,6 @@ import it.polimi.middleware.kafka.StringUtils;
 import it.polimi.middleware.kafka.beans.Order;
 import it.polimi.middleware.kafka.beans.User;
 import it.polimi.middleware.kafka.enums.OrderStatus;
-import it.polimi.middleware.kafka.enums.UserRole;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -47,7 +46,6 @@ public class UserInputManager extends Thread{
     }
 
     public void run() {
-        // setup functions moved to the bottom for better code readability
         HttpServer server = null;
         try {
             server = HttpServer.create(new InetSocketAddress(StringUtils.httpServers, httpPort), 0);
@@ -149,8 +147,6 @@ public class UserInputManager extends Thread{
                 myUser.setUsername(params[0].split("=")[1]);
                 myUser.setPassword(params[1].split("=")[1]);
                 myUser.setAddress(params[2].split("=")[1]);
-                myUser.setUserRole(UserRole.CUSTOMER);
-                //User myUser = gson.fromJson(stringBuilder.toString(), User.class);
                 // if the user doesn't exists, add it
                 if (db_users.get(myUser.getUsername()) == null) {
                     publishNewUser(producer, myUser.getUsername(), gson.toJson(myUser));

@@ -111,9 +111,6 @@ public class OrderInputManager extends Thread {
         orderProducerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, StringUtils.brokersAddr);
         orderProducerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         orderProducerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        //producerProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerTransactionalId);
-        // Idempotence = exactly once semantics between the producer and the partition
-        //orderProducerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(true));
         orderProducerProps.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, String.valueOf(1000));
         return new KafkaProducer<>(orderProducerProps);
     }

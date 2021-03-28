@@ -63,7 +63,6 @@ public class ShippingInputManager extends Thread{
                 String orderId = stringBuilder.toString().split("=")[1];
                 if (!orderId.matches("\\d+")) {
                     exchange.sendResponseHeaders(400, 0);
-                    System.out.println("error id");
                 }
                 else {
                     Order myOrder = (new Gson()).fromJson(db_orders.get(orderId), Order.class);
@@ -73,14 +72,12 @@ public class ShippingInputManager extends Thread{
                         exchange.sendResponseHeaders(200, 0);
                     } else {
                         exchange.sendResponseHeaders(400, 0);
-                        System.out.println("error status");
                     }
                 }
                 exchange.getResponseBody().close();
             } catch (Exception e){
                 exchange.sendResponseHeaders(400, 0);
                 exchange.getResponseBody().close();
-                System.out.println("error catch");
             }
         }
         else if ("GET".equals(exchange.getRequestMethod())){ // Show all orders
@@ -110,9 +107,6 @@ public class ShippingInputManager extends Thread{
         userProducerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, StringUtils.brokersAddr);
         userProducerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         userProducerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        //producerProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, producerTransactionalId);
-        // Idempotence = exactly once semantics between the producer and the partition
-        //userProducerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(true));
         userProducerProps.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, String.valueOf(1000));
         return new KafkaProducer<>(userProducerProps);
     }

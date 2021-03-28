@@ -23,7 +23,6 @@ public class OrderConsumerProducer extends Thread {
     private static final String itemsTopic          = "items_count";
     private static final String transactionalId     = "transactionId";
 
-    // latest for real-time purpose
     private static final String offsetResetStrategy     = "latest";
     private static final String isolationLevelStrategy  = "read_committed";
 
@@ -61,7 +60,6 @@ public class OrderConsumerProducer extends Thread {
                     // check if the items requested are available
                     for (String itemRequested : myOrder.getMapItemToQuantity().keySet()) {
                         String quantityAvailable = db_items.get(itemRequested);
-                        // checkAvailability()
                         if (quantityAvailable == null
                                 || Integer.parseInt(quantityAvailable) - myOrder.getMapItemToQuantity().get(itemRequested) < 0) {
                             myOrder.setStatus(OrderStatus.REFUSED);
@@ -73,7 +71,6 @@ public class OrderConsumerProducer extends Thread {
                         // change availability of each item requested
                         for (String itemRequested : myOrder.getMapItemToQuantity().keySet()) {
                             String quantityAvailable = db_items.get(itemRequested);
-                            // changeAvaiability(): local + publish
                             publishItemUpdated(atomicProducer, itemRequested, String.valueOf(
                                     Integer.parseInt(quantityAvailable) - myOrder.getMapItemToQuantity().get(itemRequested)));
                         }
@@ -89,7 +86,6 @@ public class OrderConsumerProducer extends Thread {
                     // reset availability of each item requested
                     for (String itemRequested : myOrder.getMapItemToQuantity().keySet()) {
                         String quantityAvailable = db_items.get(itemRequested);
-                        // changeAvaiability(): local + publish
                         publishItemUpdated(atomicProducer, itemRequested, String.valueOf(
                                 Integer.parseInt(quantityAvailable) + myOrder.getMapItemToQuantity().get(itemRequested)));
                     }
@@ -142,7 +138,6 @@ public class OrderConsumerProducer extends Thread {
         producerProps.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionalId);
         // Idempotence = exactly once semantics between the producer and the partition
         producerProps.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, String.valueOf(true));
-        //producerProps.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, String.valueOf(1000));
         return new KafkaProducer<>(producerProps);
     }
 

@@ -17,7 +17,6 @@ public class UserConsumer extends Thread{
 
     private static final String ordersTopic         = "orders";
     private static final String ordersGroup         = "groupOrdersNotSubmitted";
-    private static final int autoCommitIntervalMs   = 15000;
 
     private final Map<String, String> db_orders;
 
@@ -55,7 +54,6 @@ public class UserConsumer extends Thread{
         orderConsumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         orderConsumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         orderConsumerProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, String.valueOf(true));
-        //orderConsumerProps.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, String.valueOf(autoCommitIntervalMs));
         return new KafkaConsumer<>(orderConsumerProps);
     }
 }
