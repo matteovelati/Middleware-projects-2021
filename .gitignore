@@ -1,0 +1,22 @@
+# Log file
+*.log
+*.DS_Store
+
+
+# Compiled class file
+*.class
+
+# OS files
+.DS_Store
+Icon?
+
+
+# IntelliJ
+target/
+out/
+.idea/
+.idea_modules/
+*.iml
+*.ipr
+*.iws
+
