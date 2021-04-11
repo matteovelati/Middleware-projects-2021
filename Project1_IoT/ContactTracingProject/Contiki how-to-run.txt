@@ -19,8 +19,8 @@ IoT: CONTIKI+NODE-RED PROJECT 		HOW-TO-RUN
 	topic # out 0
 	topic # in 0
 
-6. Access the rpl-border-router folder of the project and start it:
-	$ cd /media/sf_contiki-ng-mw-2021/ContactTracingProject/rpl-border-router/
+6. Access the rpl-router folder of the project and start it:
+	$ cd /media/sf_contiki-ng-mw-2021/ContactTracingProject/rpl-router/
 	$ make TARGET=cooja connect-router-cooja
 
 7. Start the Node-RED container inside Docker (check http://127.0.0.1:1880)

@@ -1,4 +1,4 @@
-CONTIKI_PROJECT = rpl-border-router
+CONTIKI_PROJECT = rpl-router
 all: $(CONTIKI_PROJECT)
 CONTIKI = ../..
 
