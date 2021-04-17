@@ -1,0 +1,34 @@
+IoT: CONTIKI+NODE-RED PROJECT 		HOW-TO-RUN
+
+1. Download the 'ContactTracingProject' folder and add it to your local installation of Contiki-NG (root folder)
+
+2. Start the Ubuntu 32-bit VM and launch Cooja simulator:
+	$ cd /media/sf_contiki-ng-mw-2021/tools/cooja
+	$ ant run
+
+3. Load the simulation ContactTracing2021.csc. Re-compile all 3 cooja motes
+
+
+4. (Only first time) Edit the mosquitto local broker configuration file (then restart it):
+	$ sudo nano /etc/mosquitto/mosquitto.conf
+	connection bridge-01 
+	address mqtt.neslab.it:3200 
+	topic # out 0
+	topic # in 0
+	$ sudo service mosquitto restart
+
+5. Connect through ssh into the VM:
+	$ ssh user@127.0.0.1 -p 2222
+	password: user
+
+
+6. Access the rpl-router folder of the project and start it:
+	$ cd /media/sf_contiki-ng-mw-2021/ContactTracingProject/rpl-router/
+	$ make TARGET=cooja connect-router-cooja
+
+7. Start the Node-RED container inside Docker (check http://127.0.0.1:1880)
+
+8. Start the simulation (speed-limit set to 100%).
+   After some time (~30 secs) the full environment will be set-up and you can start hanging around with the purple node.
+
+

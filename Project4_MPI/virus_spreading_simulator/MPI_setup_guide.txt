@@ -1,0 +1,37 @@
+MPI SETUP UBUNTU
+
+1. Create the alias for the new IP address: 
+    $ sudo nano /etc/hosts 
+    127.0.0.1      localhost 
+    192.168.1.6    worker-nico 
+    192.168.1.7    worker-teo
+    192.168.1.5    worker-fabio 
+
+2. Add all alias entries in file /etc/exports: 
+    $ sudo nano /etc/exports
+    /srv/nfs_share <localhostIP>(rw,sync,no_root_squash,no_subtree_check) 
+    /srv/nfs_share <worker1IP>(rw,sync,no_root_squash,no_subtree_check) 
+    /srv/nfs_share <worker2IP>(rw,sync,no_root_squash,no_subtree_check) 
+ 
+3. Exports and update the settings: 
+    $ sudo exportfs -varf 
+
+4. If not exists, create the mount dir:
+    $ sudo mkdir -p /mnt/nfs_share_client
+
+5. Mount shared directory to nfs server:
+    $ sudo mount -t nfs <masterIP>:/srv/nfs_share /mnt/nfs_share_client
+
+6. Add this entry to make the mount permanent:
+    $ sudo nano /etc/fstab
+    <masterIP>:/srv/nfs_share /mnt/nfs_share_client nfs 
+
+7. Restart the nfs server: 
+    $ sudo systemctl restart nfs-kernel-server.service
+
+8. Run the mpi executable file from /mnt/nfs_share_client:
+    $ mpirun --host localhost:2,worker-nico:2,worker-fabio:2 ./exe
+
+
+  https://www.vitaarca.net/post/tech/setting-up-openmpi-cluster-within-a-lan/
+ https://mpitutorial.com/tutorials/running-an-mpi-cluster-within-a-lan/
